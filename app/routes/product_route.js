@@ -35,4 +35,9 @@ router.put("/products/:id", async (req, res) => {
   }
 });
 
+router.delete("/products/:id", async (req, res) => {
+  await prisma.product.delete({ where: { id: +req.params.id } });
+  res.status(200).json({ message: "Product deleted" });
+});
+
 export default router;

@@ -14,15 +14,61 @@ datasource db {
 }
 
 model Category {
-  id   Int    @id @default(autoincrement())
-  name String
+  id      Int       @id @default(autoincrement())
+  name    String
+  Product Product[]
 
   @@map("categories")
 }
 
 model Color {
-  id Int @id @default(autoincrement())
-  name String
+  id           Int            @id @default(autoincrement())
+  name         String
+  ColorProduct ColorProduct[]
 
   @@map("colors")
+}
+
+model Product {
+  id             Int    @id @default(autoincrement())
+  category_id    Int
+  name           String
+  description    String
+  purchase_price Float
+  sellingprice0  Float
+  sellingprice1  Float
+  sellingprice2  Float
+  sellingprice3  Float
+  sellingprice4  Float
+  sellingprice5  Float
+  stock          Int
+
+  Category     Category       @relation(fields: [category_id], references: [id])
+  ProductImage ProductImage[]
+  ColorProduct ColorProduct[]
+
+  @@map("products")
+}
+
+model ColorProduct {
+  color_id   Int
+  product_id Int
+
+  Color   Color   @relation(fields: [color_id], references: [id])
+  Product Product @relation(fields: [product_id], references: [id])
+
+  @@id([color_id, product_id])
+  @@map("colorproduct")
+}
+
+model ProductImage {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  image_url  String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  Product Product @relation(fields: [product_id], references: [id])
+
+  @@map("productimages")
 }

@@ -48,4 +48,18 @@ router.put("/categories/:id", async (req, res) => {
   }
 });
 
+router.delete("/categories/:id", async (req, res) => {
+  if (isNaN(+req.params.id)) {
+    res.status(400).json({ message: "ID tidak diketahui" });
+  } else {
+    const category = await prisma.category.findFirst({ where: { id: +req.params.id } });
+    if (!category) {
+      res.status(404).json({ message: "ID tidak ditemukan" });
+    } else {
+      await prisma.category.delete({ where: { id: +req.params.id } });
+      res.status(200).json({ message: "Data berhasil dihapus" });
+    }
+  }
+});
+
 export default router;

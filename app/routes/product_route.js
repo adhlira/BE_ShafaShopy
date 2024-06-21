@@ -12,7 +12,16 @@ router.get("/products/:id", async (req, res) => {
   if (isNaN(req.params.id)) {
     res.status(400).json({ message: "Invalid ID" });
   } else {
-    const product = await prisma.product.findFirst({ where: { id: +req.params.id } });
+    const product = await prisma.product.findFirst(
+      {
+        include: {
+          Category: { select: { name: true } },
+          Color: { select: { name: true } },
+          SellingPrice: { select: { price0: true, price1: true, price2: true, price3: true, price4: true, price5: true } },
+        },
+      },
+      { where: { id: +req.params.id } }
+    );
     if (!product) {
       res.status(404).json({ message: "Product Not Found" });
     } else {

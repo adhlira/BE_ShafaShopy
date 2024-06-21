@@ -48,7 +48,7 @@ router.put("/colors/:id", async (req, res) => {
   }
 });
 
-router.delete("/color/:id", async (req, res) => {
+router.delete("/colors/:id", async (req, res) => {
   if (isNaN(+req.params.id)) {
     res.status(400).json({ message: "ID tidak diketahui" });
   } else {

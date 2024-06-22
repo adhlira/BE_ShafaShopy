@@ -4,7 +4,7 @@ import prisma from "../helper/prisma.js";
 const router = Router();
 
 router.get("/products", async (req, res) => {
-  const results = await prisma.product.findMany();
+  const results = await prisma.product.findMany({ include: { Color: { select: { name: true } } } });
   res.status(200).json(results);
 });
 

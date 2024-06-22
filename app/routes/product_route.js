@@ -9,23 +9,28 @@ router.get("/products", async (req, res) => {
 });
 
 router.get("/products/:id", async (req, res) => {
-  if (isNaN(req.params.id)) {
+  const productId = parseInt(req.params.id);
+  if (isNaN(productId)) {
     res.status(400).json({ message: "Invalid ID" });
   } else {
-    const product = await prisma.product.findFirst(
-      {
+    try {
+      const product = await prisma.product.findFirst({
+        where: { id: productId },
         include: {
           Category: { select: { name: true } },
           Color: { select: { name: true } },
           SellingPrice: { select: { price0: true, price1: true, price2: true, price3: true, price4: true, price5: true } },
         },
-      },
-      { where: { id: req.params.id } }
-    );
-    if (!product) {
-      res.status(404).json({ message: "Product Not Found" });
-    } else {
-      res.status(200).json(product);
+      });
+
+      if (!product) {
+        res.status(404).json({ message: "Product Not Found" });
+      } else {
+        res.status(200).json(product);
+      }
+    } catch (error) {
+      console.error("Error fetching product:", error);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   }
 });

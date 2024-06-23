@@ -12,6 +12,11 @@ router.get("/sellingprice", async (req, res) => {
   res.status(200).json(results);
 });
 
+router.get("/newsellingprice", async (req, res) => {
+  const results = await prisma.product.findMany({ where: { SellingPrice: { none: {} } } });
+  res.status(200).json(results);
+});
+
 router.get("/products/:id", async (req, res) => {
   const productId = parseInt(req.params.id);
   if (isNaN(productId)) {
@@ -39,13 +44,13 @@ router.get("/products/:id", async (req, res) => {
   }
 });
 
-router.post("/products", async (req, res) => {
-  const { category_id, color_id, name, purchase_price, stock, description } = req.body;
+router.post("/sellingprice", async (req, res) => {
+  const { product_id, price0, price1, price2, price3, price4, price5 } = req.body;
   if (!req.body.name) {
     res.status(400).json({ message: "Data tidak lengkap" });
   } else {
-    const product = await prisma.product.create({ data: { category_id, color_id, name, purchase_price, stock, description } });
-    res.status(200).json({ message: "Berhasil menambahkan data product", product });
+    const sellingPrice = await prisma.sellingPrice.create({ data: { product_id, price0, price1, price2, price3, price4, price5 } });
+    res.status(200).json({ message: "Berhasil menambahkan data baru", sellingPrice });
   }
 });
 

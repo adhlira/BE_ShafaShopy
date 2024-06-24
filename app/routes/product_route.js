@@ -40,7 +40,7 @@ router.post("/products", async (req, res) => {
   if (!req.body.name) {
     res.status(400).json({ message: "Data tidak lengkap" });
   } else {
-    const product = await prisma.product.create({ data: { category_id, color_id, name, purchase_price, stock, description } });
+    const product = await prisma.product.create({ data: { category_id, color_id, name, purchase_price, stock, description, ColorProduct: { create: { color_id } } } });
     res.status(200).json({ message: "Berhasil menambahkan data product", product });
   }
 });

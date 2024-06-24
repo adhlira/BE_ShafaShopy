@@ -60,6 +60,7 @@ router.put("/products/:id", async (req, res) => {
 });
 
 router.delete("/products/:id", async (req, res) => {
+  await prisma.colorProduct.deleteMany({ where: { product_id: +req.params.id } });
   await prisma.product.delete({ where: { id: +req.params.id } });
   res.status(200).json({ message: "Product deleted" });
 });

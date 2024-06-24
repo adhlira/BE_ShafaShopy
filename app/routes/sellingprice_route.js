@@ -13,29 +13,27 @@ router.get("/sellingprice", async (req, res) => {
 });
 
 router.get("/newsellingprice", async (req, res) => {
-  const results = await prisma.product.findMany({ where: { SellingPrice: { none: {} } } });
+  const results = await prisma.product.findMany({ where: { SellingPrice: { none: {} } }, include: { Color: { select: { name: true } } } });
   res.status(200).json(results);
 });
 
-router.get("/products/:id", async (req, res) => {
-  const productId = parseInt(req.params.id);
-  if (isNaN(productId)) {
+router.get("/sellingprice/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) {
     res.status(400).json({ message: "Invalid ID" });
   } else {
     try {
-      const product = await prisma.product.findFirst({
-        where: { id: productId },
+      const sellingPrice = await prisma.sellingPrice.findFirst({
+        where: { id: id },
         include: {
-          Category: { select: { name: true } },
-          Color: { select: { name: true } },
-          SellingPrice: { select: { price0: true, price1: true, price2: true, price3: true, price4: true, price5: true } },
+          Product: { include: { Color: { select: { name: true } } } },
         },
       });
 
-      if (!product) {
-        res.status(404).json({ message: "Product Not Found" });
+      if (!sellingPrice) {
+        res.status(404).json({ message: "Data Not Found" });
       } else {
-        res.status(200).json(product);
+        res.status(200).json(sellingPrice);
       }
     } catch (error) {
       console.error("Error fetching product:", error);
@@ -54,16 +52,16 @@ router.post("/sellingprice", async (req, res) => {
   }
 });
 
-router.put("/products/:id", async (req, res) => {
+router.put("/sellingprice/:id", async (req, res) => {
   if (isNaN(req.params.id)) {
     res.status(400).json({ message: "Invalid ID" });
   } else {
-    const product = await prisma.product.findFirst({ where: { id: +req.params.id } });
-    if (!product) {
-      res.status(404).json({ message: "Product Not Found" });
+    const sellingPrice = await prisma.sellingPrice.findFirst({ where: { id: +req.params.id } });
+    if (!sellingPrice) {
+      res.status(404).json({ message: "Data Not Found" });
     } else {
-      const product_updated = await prisma.product.update({ where: { id: +req.params.id }, data: req.body });
-      res.status(200).json({ message: "Product updated", product_updated });
+      const sellingPriceUpdated = await prisma.sellingPrice.update({ where: { id: +req.params.id }, data: req.body });
+      res.status(200).json({ message: "Data updated", sellingPriceUpdated });
     }
   }
 });

@@ -88,12 +88,12 @@ model ProductImage {
 }
 
 model Customers {
-  id Int @id @default(autoincrement())
-  name String
+  id      Int    @id @default(autoincrement())
+  name    String
   address String
-  telp String
-  level Int
-  status String
+  telp    String
+  level   Int
+  status  String
 
   @@map("customers")
 }

@@ -8,61 +8,55 @@ router.get("/customers", async (req, res) => {
   res.status(200).json(results);
 });
 
-router.get("/products/:id", async (req, res) => {
-  const productId = parseInt(req.params.id);
-  if (isNaN(productId)) {
+router.get("/customers/:id", async (req, res) => {
+  const customerId = parseInt(req.params.id);
+  if (isNaN(customerId)) {
     res.status(400).json({ message: "Invalid ID" });
   } else {
     try {
-      const product = await prisma.product.findFirst({
-        where: { id: productId },
-        include: {
-          Category: { select: { name: true } },
-          Color: { select: { name: true } },
-          SellingPrice: { select: { price0: true, price1: true, price2: true, price3: true, price4: true, price5: true } },
-        },
+      const customer = await prisma.customers.findFirst({
+        where: { id: customerId },
       });
 
-      if (!product) {
-        res.status(404).json({ message: "Product Not Found" });
+      if (!customer) {
+        res.status(404).json({ message: "Data Not Found" });
       } else {
-        res.status(200).json(product);
+        res.status(200).json(customer);
       }
     } catch (error) {
-      console.error("Error fetching product:", error);
+      console.error("Error fetching customer:", error);
       res.status(500).json({ message: "Internal Server Error" });
     }
   }
 });
 
-router.post("/products", async (req, res) => {
-  const { category_id, color_id, name, purchase_price, stock, description } = req.body;
-  if (!req.body.name) {
+router.post("/customers", async (req, res) => {
+  const { name, address, telp, level, status } = req.body;
+  if (!name || !address || !telp || !status) {
     res.status(400).json({ message: "Data tidak lengkap" });
   } else {
-    const product = await prisma.product.create({ data: { category_id, color_id, name, purchase_price, stock, description, ColorProduct: { create: { color_id } } } });
-    res.status(200).json({ message: "Berhasil menambahkan data product", product });
+    const customer = await prisma.customers.create({ data: { name, address, telp, level, status } });
+    res.status(200).json({ message: "Berhasil menambahkan data customer", customer });
   }
 });
 
-router.put("/products/:id", async (req, res) => {
+router.put("/customers/:id", async (req, res) => {
   if (isNaN(req.params.id)) {
     res.status(400).json({ message: "Invalid ID" });
   } else {
-    const product = await prisma.product.findFirst({ where: { id: +req.params.id } });
-    if (!product) {
-      res.status(404).json({ message: "Product Not Found" });
+    const customer = await prisma.customers.findFirst({ where: { id: +req.params.id } });
+    if (!customer) {
+      res.status(404).json({ message: "Data Not Found" });
     } else {
-      const product_updated = await prisma.product.update({ where: { id: +req.params.id }, data: req.body });
-      res.status(200).json({ message: "Product updated", product_updated });
+      const customer_updated = await prisma.customers.update({ where: { id: +req.params.id }, data: req.body });
+      res.status(200).json({ message: "Customer updated", customer_updated });
     }
   }
 });
 
-router.delete("/products/:id", async (req, res) => {
-  await prisma.colorProduct.deleteMany({ where: { product_id: +req.params.id } });
-  await prisma.product.delete({ where: { id: +req.params.id } });
-  res.status(200).json({ message: "Product deleted" });
+router.delete("/customers/:id", async (req, res) => {
+  await prisma.customers.delete({ where: { id: +req.params.id } });
+  res.status(200).json({ message: "Data Customer deleted" });
 });
 
 export default router;

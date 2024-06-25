@@ -86,3 +86,14 @@ model ProductImage {
 
   @@map("productimages")
 }
+
+model Customers {
+  id Int @id @default(autoincrement())
+  name String
+  address String
+  telp String
+  level Int
+  status String
+
+  @@map("customers")
+}

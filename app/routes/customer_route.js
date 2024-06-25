@@ -31,11 +31,11 @@ router.get("/customers/:id", async (req, res) => {
 });
 
 router.post("/customers", async (req, res) => {
-  const { name, address, telp, level, status } = req.body;
+  const { name, address, telp, level_id, status } = req.body;
   if (!name || !address || !telp || !status) {
     res.status(400).json({ message: "Data tidak lengkap" });
   } else {
-    const customer = await prisma.customers.create({ data: { name, address, telp, level, status } });
+    const customer = await prisma.customers.create({ data: { name, address, telp, level_id, status } });
     res.status(200).json({ message: "Berhasil menambahkan data customer", customer });
   }
 });

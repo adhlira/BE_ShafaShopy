@@ -87,13 +87,23 @@ model ProductImage {
   @@map("productimages")
 }
 
+model Level_Customer {
+  id        Int         @id @default(autoincrement())
+  level     Int
+  Customers Customers[]
+
+  @@map("level_customer")
+}
+
 model Customers {
-  id      Int    @id @default(autoincrement())
-  name    String
-  address String
-  telp    String
-  level   Int
-  status  String
+  id       Int    @id @default(autoincrement())
+  level_id Int
+  name     String
+  address  String
+  telp     String
+  status   String
+
+  Level Level_Customer @relation(fields: [level_id], references: [id])
 
   @@map("customers")
 }

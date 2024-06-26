@@ -4,7 +4,7 @@ import prisma from "../helper/prisma.js";
 const router = Router();
 
 router.get("/customers", async (req, res) => {
-  const results = await prisma.customers.findMany();
+  const results = await prisma.customers.findMany({ include: { Level: { select: { level: true } } } });
   res.status(200).json(results);
 });
 

@@ -45,6 +45,7 @@ model Product {
   ProductImage ProductImage[]
   ColorProduct ColorProduct[]
   SellingPrice SellingPrice[]
+  Transactions Transactions[]
 
   @@map("products")
 }
@@ -103,7 +104,34 @@ model Customers {
   telp     String
   status   String
 
-  Level Level_Customer @relation(fields: [level_id], references: [id])
+  Level        Level_Customer @relation(fields: [level_id], references: [id])
+  Transactions Transactions[]
 
   @@map("customers")
+}
+
+model Transactions {
+  id          Int      @id @default(autoincrement())
+  product_id  Int
+  customer_id Int
+  tanggal     DateTime @default(now())
+  total       Float
+
+  Product            Product              @relation(fields: [product_id], references: [id])
+  Customer           Customers            @relation(fields: [customer_id], references: [id])
+  Detail_Transaction Detail_Transaction[]
+
+  @@map("transactions")
+}
+
+model Detail_Transaction {
+  transaction_id Int
+  jumlah_beli    Int
+  subtotal       Float
+
+  Transaction Transactions @relation(fields: [transaction_id], references: [id])
+
+  @@id([transaction_id])
+
+  @@map("detail_transaction")
 }

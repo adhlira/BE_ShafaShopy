@@ -35,13 +35,19 @@ router.get("/products/:id", async (req, res) => {
   }
 });
 
-router.post("/products", async (req, res) => {
-  const { category_id, color_id, name, purchase_price, stock, description } = req.body;
-  if (!req.body.name) {
+router.post("/transactions", async (req, res) => {
+  const { product_id, customer_id, tanggal, total, jumlah_beli, subtotal } = req.body;
+  if (!product_id || !customer_id || !tanggal || !total || !jumlah_beli || !subtotal) {
     res.status(400).json({ message: "Data tidak lengkap" });
   } else {
-    const product = await prisma.product.create({ data: { category_id, color_id, name, purchase_price, stock, description, ColorProduct: { create: { color_id } } } });
-    res.status(200).json({ message: "Berhasil menambahkan data product", product });
+    const product = await prisma.product.findUnique({ where: { id: product_id } });
+    if (product.stock >= jumlah_beli) {
+      const transaction = await prisma.transactions.create({ data: { product_id, customer_id, tanggal, total, Detail_Transaction: { create: { jumlah_beli, subtotal } } } });
+      await prisma.product.update({ where: { id: product_id }, data: { stock: product.stock - jumlah_beli } });
+      res.status(200).json({ message: "Berhasil menambahkan data transaksi", transaction });
+    } else {
+      res.status(400).json({ message: "Stok product tidak mencukupi" });
+    }
   }
 });
 

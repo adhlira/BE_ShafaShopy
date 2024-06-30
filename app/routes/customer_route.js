@@ -16,6 +16,7 @@ router.get("/customers/:id", async (req, res) => {
     try {
       const customer = await prisma.customers.findFirst({
         where: { id: customerId },
+        include: { Level: { select: { level: true } } },
       });
 
       if (!customer) {

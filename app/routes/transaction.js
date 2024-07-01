@@ -8,18 +8,18 @@ router.get("/transactions", async (req, res) => {
   res.status(200).json(results);
 });
 
-router.get("/products/:id", async (req, res) => {
-  const productId = parseInt(req.params.id);
-  if (isNaN(productId)) {
+router.get("/transactions/:id", async (req, res) => {
+  const transaction_id = parseInt(req.params.id);
+  if (isNaN(transaction_id)) {
     res.status(400).json({ message: "Invalid ID" });
   } else {
     try {
-      const product = await prisma.product.findFirst({
-        where: { id: productId },
+      const product = await prisma.transactions.findFirst({
+        where: { id: transaction_id },
         include: {
-          Category: { select: { name: true } },
-          Color: { select: { name: true } },
-          SellingPrice: { select: { price0: true, price1: true, price2: true, price3: true, price4: true, price5: true } },
+          Detail_Transaction: { select: { jumlah_beli: true, price_per_piece: true } },
+          Product: { include: { Color: { select: { name: true } }, SellingPrice: { select: { price0: true, price1: true, price2: true, price3: true, price4: true, price5: true } } } },
+          Customer: { include: { Level: { select: { level: true } } } },
         },
       });
 
@@ -36,13 +36,13 @@ router.get("/products/:id", async (req, res) => {
 });
 
 router.post("/transactions", async (req, res) => {
-  const { product_id, customer_id, tanggal, total, jumlah_beli, subtotal } = req.body;
-  if (!product_id || !customer_id || !tanggal || !total || !jumlah_beli || !subtotal) {
+  const { product_id, customer_id, tanggal, total, jumlah_beli, price_per_piece, subtotal } = req.body;
+  if (!product_id || !customer_id || !tanggal || !total || !jumlah_beli || !price_per_piece || !subtotal) {
     res.status(400).json({ message: "Data tidak lengkap" });
   } else {
     const product = await prisma.product.findUnique({ where: { id: product_id } });
     if (product.stock >= jumlah_beli) {
-      const transaction = await prisma.transactions.create({ data: { product_id, customer_id, tanggal, total, Detail_Transaction: { create: { jumlah_beli, subtotal } } } });
+      const transaction = await prisma.transactions.create({ data: { product_id, customer_id, tanggal, total, Detail_Transaction: { create: { jumlah_beli, price_per_piece, subtotal } } } });
       await prisma.product.update({ where: { id: product_id }, data: { stock: product.stock - jumlah_beli } });
       res.status(200).json({ message: "Berhasil menambahkan data transaksi", transaction });
     } else {
@@ -65,10 +65,10 @@ router.put("/products/:id", async (req, res) => {
   }
 });
 
-router.delete("/products/:id", async (req, res) => {
-  await prisma.colorProduct.deleteMany({ where: { product_id: +req.params.id } });
-  await prisma.product.delete({ where: { id: +req.params.id } });
-  res.status(200).json({ message: "Product deleted" });
+router.delete("/transactions/:id", async (req, res) => {
+  await prisma.detail_Transaction.deleteMany({ where: { transaction_id: +req.params.id } });
+  await prisma.transactions.delete({ where: { id: +req.params.id } });
+  res.status(200).json({ message: "Transaction deleted" });
 });
 
 export default router;

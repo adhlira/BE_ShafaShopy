@@ -125,13 +125,13 @@ model Transactions {
 }
 
 model Detail_Transaction {
-  transaction_id Int
-  jumlah_beli    Int
-  subtotal       Float
+  transaction_id  Int
+  jumlah_beli     Int
+  price_per_piece Float
+  subtotal        Float
 
   Transaction Transactions @relation(fields: [transaction_id], references: [id])
 
   @@id([transaction_id])
-
   @@map("detail_transaction")
 }

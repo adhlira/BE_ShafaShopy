@@ -6,6 +6,7 @@ import sellingpriceroute from "./sellingprice_route.js";
 import customerroute from "./customer_route.js";
 import levelroute from "./level_route.js";
 import transactionroute from "./transaction.js";
+import resellerroute from "./resellerReport_route.js";
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use(sellingpriceroute);
 router.use(customerroute);
 router.use(levelroute);
 router.use(transactionroute);
+router.use(resellerroute);
 
 export default router;

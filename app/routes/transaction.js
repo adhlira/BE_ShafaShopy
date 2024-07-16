@@ -3,6 +3,66 @@ import prisma from "../helper/prisma.js";
 
 const router = Router();
 
+router.get("/bestSellingProduct", async (req, res) => {
+  try {
+    // Step 1: Group by product_id and sum jumlah_beli
+    const groupedResults = await prisma.detail_Transaction.groupBy({
+      by: ["transaction_id"],
+      _sum: {
+        jumlah_beli: true,
+      },
+    });
+
+    // Step 2: Fetch product details including colors for each grouped result
+    const productSales = await Promise.all(
+      groupedResults.map(async (result) => {
+        const transaction = await prisma.transactions.findUnique({
+          where: {
+            id: result.transaction_id,
+          },
+          include: {
+            Product: {
+              include: {
+                ColorProduct: {
+                  include: {
+                    Color: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        return {
+          productName: transaction.Product.name,
+          colorName: transaction.Product.ColorProduct.map((cp) => cp.Color.name).join(", "),
+          totalTerjual: result._sum.jumlah_beli,
+        };
+      })
+    );
+
+    // Step 3: Aggregate results by productName and colorName
+    const aggregatedResults = productSales.reduce((acc, current) => {
+      const key = `${current.productName} - ${current.colorName}`;
+      if (!acc[key]) {
+        acc[key] = {
+          productName: current.productName,
+          colorName: current.colorName,
+          totalTerjual: 0,
+        };
+      }
+      acc[key].totalTerjual += current.totalTerjual;
+      return acc;
+    }, {});
+
+    const finalResults = Object.values(aggregatedResults).sort((a, b) => b.totalTerjual - a.totalTerjual);
+    const limitedresult = finalResults.slice(0, 1);
+    res.json(limitedresult);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get("/transactions", async (req, res) => {
   const results = await prisma.transactions.findMany({ include: { Product: { include: { Color: { select: { name: true } } } }, Detail_Transaction: { select: { jumlah_beli: true } } }, orderBy: { tanggal: "desc" } });
   res.status(200).json(results);

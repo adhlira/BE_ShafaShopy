@@ -3,6 +3,55 @@ import prisma from "../helper/prisma.js";
 
 const router = Router();
 
+router.get("/bestreseller", async (req, res) => {
+  try {
+    const results = await prisma.detail_Transaction.groupBy({
+      by: ["transaction_id"],
+      _sum: {
+        jumlah_beli: true,
+      },
+    });
+
+    const productSales = await Promise.all(
+      results.map(async (result) => {
+        const transaction = await prisma.transactions.findUnique({
+          where: {
+            id: result.transaction_id,
+          },
+          include: {
+            Customer: {
+              select: { name: true },
+            },
+          },
+        });
+
+        return {
+          customerName: transaction.Customer.name,
+          total_penjualan: result._sum.jumlah_beli,
+        };
+      })
+    );
+
+    const aggregatedResults = productSales.reduce((acc, current) => {
+      const key = `${current.customerName}`;
+      if (!acc[key]) {
+        acc[key] = {
+          customerName: current.customerName,
+          total_penjualan: 0,
+        };
+      }
+      acc[key].total_penjualan += current.total_penjualan;
+      return acc;
+    }, {});
+
+    const finalResults = Object.values(aggregatedResults).sort((a, b) => b.total_penjualan - a.total_penjualan);
+    const limitedresult = finalResults.slice(0, 1);
+    res.status(200).json(limitedresult);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get("/bestSellingProduct", async (req, res) => {
   try {
     // Step 1: Group by product_id and sum jumlah_beli

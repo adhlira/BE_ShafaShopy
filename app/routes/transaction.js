@@ -5,46 +5,36 @@ const router = Router();
 
 router.get("/bestreseller", async (req, res) => {
   try {
-    const results = await prisma.detail_Transaction.groupBy({
-      by: ["transaction_id"],
-      _sum: {
-        jumlah_beli: true,
+    const results = await prisma.customers.findMany({
+      where: {
+        id: {
+          not: 1,
+        },
+      },
+      include: {
+        Transactions: {
+          include: {
+            Detail_Transaction: true,
+          },
+        },
       },
     });
 
-    const productSales = await Promise.all(
-      results.map(async (result) => {
-        const transaction = await prisma.transactions.findUnique({
-          where: {
-            id: result.transaction_id,
-          },
-          include: {
-            Customer: {
-              select: { name: true },
-            },
-          },
-        });
+    // Calculate total sales for each customer
+    const customerSales = results.map((customer) => {
+      const total_penjualan = customer.Transactions.reduce((sum, transaction) => {
+        const transactionSum = transaction.Detail_Transaction.reduce((subSum, detail) => subSum + detail.jumlah_beli, 0);
+        return sum + transactionSum;
+      }, 0);
 
-        return {
-          customerName: transaction.Customer.name,
-          total_penjualan: result._sum.jumlah_beli,
-        };
-      })
-    );
+      return {
+        name: customer.name,
+        total_penjualan: total_penjualan,
+      };
+    });
 
-    const aggregatedResults = productSales.reduce((acc, current) => {
-      const key = `${current.customerName}`;
-      if (!acc[key]) {
-        acc[key] = {
-          customerName: current.customerName,
-          total_penjualan: 0,
-        };
-      }
-      acc[key].total_penjualan += current.total_penjualan;
-      return acc;
-    }, {});
-
-    const finalResults = Object.values(aggregatedResults).sort((a, b) => b.total_penjualan - a.total_penjualan);
+    // Sort by total sales in descending order
+    const finalResults = customerSales.sort((a, b) => b.total_penjualan - a.total_penjualan);
     const limitedresult = finalResults.slice(0, 1);
     res.status(200).json(limitedresult);
   } catch (error) {

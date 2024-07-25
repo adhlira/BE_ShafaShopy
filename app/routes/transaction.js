@@ -151,6 +151,7 @@ router.post("/transactions", async (req, res) => {
 });
 
 router.put("/transactions/:id", async (req, res) => {
+  const { product_id, customer_id, tanggal, total, jumlah_beli, price_per_piece, subtotal } = req.body;
   if (isNaN(req.params.id)) {
     res.status(400).json({ message: "Invalid ID" });
   } else {
@@ -158,7 +159,27 @@ router.put("/transactions/:id", async (req, res) => {
     if (!transaction) {
       res.status(404).json({ message: "Transaction Not Found" });
     } else {
-      const transaction_updated = await prisma.transactions.update({ where: { id: +req.params.id }, data: req.body });
+      const transaction_updated = await prisma.transactions.update({
+        where: { id: +req.params.id },
+        data: {
+          product_id: product_id,
+          customer_id: customer_id,
+          tanggal: tanggal,
+          total: total,
+          Detail_Transaction: {
+            update: {
+              where: {
+                transaction_id: +req.params.id,
+              },
+              data: {
+                jumlah_beli: jumlah_beli,
+                subtotal: subtotal,
+                price_per_piece: price_per_piece,
+              },
+            },
+          },
+        },
+      });
       res.status(200).json({ message: "Product updated", transaction_updated });
     }
   }

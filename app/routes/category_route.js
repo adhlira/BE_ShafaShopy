@@ -34,6 +34,21 @@ router.post("/categories", async (req, res) => {
   }
 });
 
+router.get("/categories/:name", async (req, res) => {
+  const { categoryName } = req.query;
+  try {
+    const checkName = await prisma.category.findUnique({ where: { name: categoryName } });
+    if (checkName) {
+      res.status(200).json(checkName);
+    } else {
+      res.status(200).json({ message: "Data kosong" });
+    }
+  } catch (error) {
+    console.error("error", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 router.put("/categories/:id", async (req, res) => {
   if (isNaN(req.params.id)) {
     res.status(400).json({ message: "ID tidak ketahui" });

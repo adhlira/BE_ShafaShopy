@@ -42,8 +42,13 @@ router.put("/categories/:id", async (req, res) => {
     if (!category) {
       res.status(404).json({ message: "ID tidak ditemukan" });
     } else {
-      const updatedCategory = await prisma.category.update({ where: { id: +req.params.id }, data: req.body });
-      res.status(200).json({ message: "Data berhasil di perbarui", updatedCategory });
+      const duplikatCategory = await prisma.category.findFirst({ where: { name: req.body.name } });
+      if (duplikatCategory) {
+        res.status(400).json("Category Name is Exist");
+      } else {
+        const updatedCategory = await prisma.category.update({ where: { id: +req.params.id }, data: req.body });
+        res.status(200).json({ message: "Data berhasil di perbarui", updatedCategory });
+      }
     }
   }
 });

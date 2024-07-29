@@ -25,27 +25,12 @@ router.post("/categories", async (req, res) => {
   const { name } = req.body;
   const duplikatCategory = await prisma.category.findFirst({ where: { name: req.body.name } });
   if (!req.body.name) {
-    res.status(400).json({ message: "Data tidak lengkap" });
+    res.status(400).json({ message: "Data not completed" });
   } else if (duplikatCategory) {
-    res.status(400).json({ message: "Nama category yang dimasukkan sudah ada" });
+    res.status(400).json({ message: "Category Name is exist" });
   } else {
     const category = await prisma.category.create({ data: { name } });
-    res.status(200).json({ message: "Berhasil menambahkan data category", category });
-  }
-});
-
-router.get("/categories/:name", async (req, res) => {
-  const { categoryName } = req.query;
-  try {
-    const checkName = await prisma.category.findUnique({ where: { name: categoryName } });
-    if (checkName) {
-      res.status(200).json(checkName);
-    } else {
-      res.status(200).json({ message: "Data kosong" });
-    }
-  } catch (error) {
-    console.error("error", error);
-    res.status(500).json({ error: "Server error" });
+    res.status(200).json({ message: "successfully added category data", category });
   }
 });
 

@@ -25,7 +25,7 @@ router.post("/categories", async (req, res) => {
   const { name } = req.body;
   const duplikatCategory = await prisma.category.findFirst({ where: { name: req.body.name } });
   if (!req.body.name) {
-    res.status(400).json({ message: "Data not completed" });
+    res.status(400).json({ message: "Data incomplete" });
   } else if (duplikatCategory) {
     res.status(400).json({ message: "Category Name is exist" });
   } else {

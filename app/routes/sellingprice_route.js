@@ -45,10 +45,10 @@ router.get("/sellingprice/:id", async (req, res) => {
 router.post("/sellingprice", async (req, res) => {
   const { product_id, price0, price1, price2, price3, price4, price5 } = req.body;
   if (!req.body.product_id || !req.body.price0 || !req.body.price1 || !req.body.price2 || !req.body.price3 || !req.body.price4 || !req.body.price5) {
-    res.status(400).json({ message: "Data tidak lengkap" });
+    res.status(400).json({ message: "Data incomplete" });
   } else {
     const sellingPrice = await prisma.sellingPrice.create({ data: { product_id, price0, price1, price2, price3, price4, price5 } });
-    res.status(200).json({ message: "Berhasil menambahkan data baru", sellingPrice });
+    res.status(200).json({ message: "Added Data Succesfully", sellingPrice });
   }
 });
 

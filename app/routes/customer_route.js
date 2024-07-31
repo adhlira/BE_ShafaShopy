@@ -4,7 +4,7 @@ import prisma from "../helper/prisma.js";
 const router = Router();
 
 router.get("/customers", async (req, res) => {
-  const results = await prisma.customers.findMany({ include: { Level: { select: { level: true } } }, orderBy: { level_id: "asc" }, skip:1 });
+  const results = await prisma.customers.findMany({ include: { Level: { select: { level: true } } }, orderBy: { level_id: "asc" }, skip: 1 });
   res.status(200).json(results);
 });
 
@@ -34,10 +34,15 @@ router.get("/customers/:id", async (req, res) => {
 router.post("/customers", async (req, res) => {
   const { name, address, telp, level_id, status } = req.body;
   if (!name || !address || !telp || !status) {
-    res.status(400).json({ message: "Data tidak lengkap" });
+    res.status(400).json({ message: "Data incomplete" });
   } else {
-    const customer = await prisma.customers.create({ data: { name, address, telp, level_id, status } });
-    res.status(200).json({ message: "Berhasil menambahkan data customer", customer });
+    const duplikatTelp = await prisma.customers.findFirst({ where: { telp: req.body.telp } });
+    if (duplikatTelp) {
+      res.status(400).json({ message: "The telephone number is registered" });
+    } else {
+      const customer = await prisma.customers.create({ data: { name, address, telp, level_id, status } });
+      res.status(200).json({ message: "Succesfully added data", customer });
+    }
   }
 });
 

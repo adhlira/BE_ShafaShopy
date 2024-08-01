@@ -47,6 +47,7 @@ router.post("/customers", async (req, res) => {
 });
 
 router.put("/customers/:id", async (req, res) => {
+  const { name, address, telp, status, level_id } = req.body;
   if (isNaN(req.params.id)) {
     res.status(400).json({ message: "Invalid ID" });
   } else {
@@ -54,8 +55,22 @@ router.put("/customers/:id", async (req, res) => {
     if (!customer) {
       res.status(404).json({ message: "Data Not Found" });
     } else {
-      const customer_updated = await prisma.customers.update({ where: { id: +req.params.id }, data: req.body });
-      res.status(200).json({ message: "Customer updated", customer_updated });
+      if (!name || !address || !telp || !status || !level_id) {
+        res.status(400).json({ message: "Data incomplete" });
+      } else {
+        if (req.body.telp !== customer.telp) {
+          const telpDuplikat = await prisma.customers.findFirst({ where: { telp: req.body.telp } });
+          if (telpDuplikat) {
+            res.status(400).json({ message: "The telephone number is already registered" });
+          } else {
+            const customer_updated = await prisma.customers.update({ where: { id: +req.params.id }, data: req.body });
+            res.status(200).json({ message: "Customer updated", customer_updated });
+          }
+        } else {
+          const customer_updated = await prisma.customers.update({ where: { id: +req.params.id }, data: req.body });
+          res.status(200).json({ message: "Customer updated", customer_updated });
+        }
+      }
     }
   }
 });

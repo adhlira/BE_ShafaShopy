@@ -137,15 +137,15 @@ router.get("/transactions/:id", async (req, res) => {
 router.post("/transactions", async (req, res) => {
   const { product_id, customer_id, tanggal, total, jumlah_beli, price_per_piece, subtotal } = req.body;
   if (!product_id || !customer_id || !tanggal || !total || !jumlah_beli || !price_per_piece || !subtotal) {
-    res.status(400).json({ message: "Data tidak lengkap" });
+    res.status(400).json({ message: "Data incomplete" });
   } else {
     const product = await prisma.product.findUnique({ where: { id: product_id } });
     if (product.stock >= jumlah_beli) {
       const transaction = await prisma.transactions.create({ data: { product_id, customer_id, tanggal, total, Detail_Transaction: { create: { jumlah_beli, price_per_piece, subtotal } } } });
       await prisma.product.update({ where: { id: product_id }, data: { stock: product.stock - jumlah_beli } });
-      res.status(200).json({ message: "Berhasil menambahkan data transaksi", transaction });
+      res.status(200).json({ message: "Successfully added transaction data", transaction });
     } else {
-      res.status(400).json({ message: "Stok product tidak mencukupi" });
+      res.status(400).json({ message: "Insufficient product stock" });
     }
   }
 });

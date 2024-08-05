@@ -161,78 +161,87 @@ router.put("/transactions/:id", async (req, res) => {
     } else {
       if (!product_id || !customer_id || !tanggal || !total || !jumlah_beli || !price_per_piece || !subtotal) {
         res.status(400).json({ message: "Data incomplete" });
-      } else {  
+      } else {
         const detail = await prisma.detail_Transaction.findUnique({ where: { transaction_id: +req.params.id } });
         const product = await prisma.product.findUnique({ where: { id: product_id } });
         if (product_id == transaction.product_id) {
-          const updateData = await prisma.transactions.update({
-            where: { id: +req.params.id },
-            data: {
-              product_id: product_id,
-              customer_id: customer_id,
-              tanggal: tanggal,
-              total: total,
-            },
-          });
-          if (jumlah_beli > detail.jumlah_beli) {
-            await prisma.product.update({
-              where: {
-                id: product_id,
-              },
+          if (product.stock >= jumlah_beli) {
+            const updateData = await prisma.transactions.update({
+              where: { id: +req.params.id },
               data: {
-                stock: product.stock - (jumlah_beli - detail.jumlah_beli),
+                product_id: product_id,
+                customer_id: customer_id,
+                tanggal: tanggal,
+                total: total,
               },
             });
+            if (jumlah_beli > detail.jumlah_beli) {
+              await prisma.product.update({
+                where: {
+                  id: product_id,
+                },
+                data: {
+                  stock: product.stock - (jumlah_beli - detail.jumlah_beli),
+                },
+              });
+            } else {
+              await prisma.product.update({
+                where: {
+                  id: product_id,
+                },
+                data: {
+                  stock: product.stock + (detail.jumlah_beli - jumlah_beli),
+                },
+              });
+            }
+            await prisma.detail_Transaction.update({
+              where: {
+                transaction_id: +req.params.id,
+              },
+              data: {
+                jumlah_beli: jumlah_beli,
+                subtotal: subtotal,
+                price_per_piece: price_per_piece,
+              },
+            });
+            res.status(200).json({ message: "Transaction updated", updateData });
           } else {
+            res.status(400).json({ message: "Insufficient product stock" });
+          }
+        } else {
+          if (product.stock >= jumlah_beli) {
+            const updateData = await prisma.transactions.update({
+              where: { id: +req.params.id },
+              data: {
+                product_id: product_id,
+                customer_id: customer_id,
+                tanggal: tanggal,
+                total: total,
+              },
+            });
             await prisma.product.update({
               where: {
                 id: product_id,
               },
               data: {
-                stock: product.stock + (detail.jumlah_beli - jumlah_beli),
+                stock: product.stock - jumlah_beli,
               },
             });
+            await prisma.detail_Transaction.update({
+              where: {
+                transaction_id: +req.params.id,
+              },
+              data: {
+                jumlah_beli: jumlah_beli,
+                subtotal: subtotal,
+                price_per_piece: price_per_piece,
+              },
+            });
+            res.status(200).json({ message: "Transaction updataed", updateData });
           }
-          await prisma.detail_Transaction.update({
-            where: {
-              transaction_id: +req.params.id,
-            },
-            data: {
-              jumlah_beli: jumlah_beli,
-              subtotal: subtotal,
-              price_per_piece: price_per_piece,
-            },
-          });
-          res.status(200).json({ message: "Transaction updated", updateData });
-        } else {
-          const updateData = await prisma.transactions.update({
-            where: { id: +req.params.id },
-            data: {
-              product_id: product_id,
-              customer_id: customer_id,
-              tanggal: tanggal,
-              total: total,
-            },
-          });
-          await prisma.product.update({
-            where: {
-              id: product_id,
-            },
-            data: {
-              stock: product.stock - jumlah_beli,
-            },
-          });
-          await prisma.detail_Transaction.update({
-            where: {
-              transaction_id: +req.params.id,
-            },
-            data: {
-              jumlah_beli: jumlah_beli,
-              subtotal: subtotal,
-              price_per_piece: price_per_piece,
-            },
-          });
-          res.status(200).json({ message: "Transaction updataed", updateData });
+          else{
+            res.status(400).json({message:"Insufficient product stock"})
+          }
         }
       }
     }

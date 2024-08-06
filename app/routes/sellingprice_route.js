@@ -60,8 +60,13 @@ router.put("/sellingprice/:id", async (req, res) => {
     if (!sellingPrice) {
       res.status(404).json({ message: "Data Not Found" });
     } else {
-      const sellingPriceUpdated = await prisma.sellingPrice.update({ where: { id: +req.params.id }, data: req.body });
-      res.status(200).json({ message: "Data updated", sellingPriceUpdated });
+      const { product_id, price0, price1, price2, price3, price4, price5 } = req.body;
+      if (!product_id || !price0 || !price1 || !price2 || !price3 || !price4 || !price5) {
+        res.status(400).json({ message: "Data incomplete" });
+      } else {
+        const sellingPriceUpdated = await prisma.sellingPrice.update({ where: { id: +req.params.id }, data: req.body });
+        res.status(200).json({ message: "Data updated", sellingPriceUpdated });
+      }
     }
   }
 });

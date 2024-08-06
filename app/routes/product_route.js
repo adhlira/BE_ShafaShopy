@@ -53,8 +53,13 @@ router.put("/products/:id", async (req, res) => {
     if (!product) {
       res.status(404).json({ message: "Product Not Found" });
     } else {
-      const product_updated = await prisma.product.update({ where: { id: +req.params.id }, data: req.body });
-      res.status(200).json({ message: "Product updated", product_updated });
+      const { category_id, color_id, name, purchase_price, stock, description } = req.body;
+      if (category_id || color_id || name || purchase_price || stock || description) {
+        res.status(400).json({ message: "Data incomplete" })
+      } else {
+        const product_updated = await prisma.product.update({ where: { id: +req.params.id }, data: req.body });
+        res.status(200).json({ message: "Product updated", product_updated });
+      }
     }
   }
 });

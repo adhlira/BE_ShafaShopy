@@ -42,12 +42,16 @@ router.put("/colors/:id", async (req, res) => {
     if (!color) {
       res.status(404).json({ message: "ID not found" });
     } else {
-      const duplikatColor = await prisma.color.findFirst({ where: { name: req.body.name } });
-      if (duplikatColor) {
-        res.status(400).json("Color Name is exist");
+      if (!req.body.name) {
+        res.status(400).json({ message: "Data incomplete" });
       } else {
-        const updatedColor = await prisma.color.update({ where: { id: +req.params.id }, data: req.body });
-        res.status(200).json({ message: "Data updated succesfully", updatedColor });
+        const duplikatColor = await prisma.color.findFirst({ where: { name: req.body.name } });
+        if (duplikatColor) {
+          res.status(400).json("Color Name is exist");
+        } else {
+          const updatedColor = await prisma.color.update({ where: { id: +req.params.id }, data: req.body });
+          res.status(200).json({ message: "Data updated succesfully", updatedColor });
+        }
       }
     }
   }
